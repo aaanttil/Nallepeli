@@ -12,14 +12,7 @@ public class Nallepeli : PhysicsGame
     Shape nallenMuoto;
     Image jaapuikko = LoadImage("jaapuikko2");
     Shape jaapuikonMuoto;
-    Image nallepaa = LoadImage("nallepaa");
-    Image nallekeho = LoadImage("nallekeho");
-    Image nallejalkavasen = LoadImage("nallejalkavasen");
-    Image nallejalkaoikea = LoadImage("nallejalkaoikea");
-    Shape nallepaaMuoto;
-    Shape nallekehoMuoto;
-    Shape nallejalkavasenMuoto;
-    Shape nallejalkaoikeaMuoto;
+
 
     int health;
     IntMeter pisteLaskuri;
@@ -34,7 +27,6 @@ public class Nallepeli : PhysicsGame
         Add(alaReuna);
         alaReuna.Tag = "alareuna";
         LuoPistelaskuri();
-        LuoNalle();
         LuoPelaaja(204, 200);
         Timer.CreateAndStart(0.2, LuoJaapuikkoja); ///käytetöön LuoJaapuikkoja aliohjelmaa 0.2 sekunnin välein
 
@@ -154,49 +146,5 @@ public class Nallepeli : PhysicsGame
         Add(pisteNaytto);
     }
 
-    public void LuoNalle()
-    {
-        nallepaaMuoto = Shape.FromImage(nallepaa);
-        nallekehoMuoto = Shape.FromImage(nallekeho);
-        nallejalkavasenMuoto = Shape.FromImage(nallejalkavasen);
-        nallejalkaoikeaMuoto = Shape.FromImage(nallejalkaoikea);
-
-        PhysicsObject paa = new PhysicsObject(400, 300, nallepaaMuoto);
-        PhysicsObject keho = new PhysicsObject(400,300, nallekehoMuoto);
-        PhysicsObject jalkavasen = new PhysicsObject(400, 300, nallejalkavasenMuoto);
-        PhysicsObject jalkaoikea = new PhysicsObject(400, 300, nallejalkaoikeaMuoto);
-        paa.Image = nallepaa;
-        keho.Image = nallekeho;
-        jalkavasen.Image = nallejalkavasen;
-        jalkaoikea.Image = nallejalkaoikea;
-        AxleJoint liitosPaaKeho = new AxleJoint(paa, keho, new Vector(0, keho.Y + 20));
-        liitosPaaKeho.Softness = 0;
-        AxleJoint liitosKehoVasJalka = new AxleJoint(jalkavasen, keho, new Vector(keho.X - 30, keho.Y - 30));
-        AxleJoint liitosKehoOikJalka = new AxleJoint(jalkaoikea, keho, new Vector(keho.X + 25, keho.Y - 25));
-        liitosKehoVasJalka.Softness = 0.1;
-        liitosKehoOikJalka.Softness = 0.1;
-
-        paa.CollisionIgnoreGroup = 1;
-        keho.CollisionIgnoreGroup = 1;
-        jalkavasen.CollisionIgnoreGroup = 1;
-        jalkaoikea.CollisionIgnoreGroup = 1;
-
-        Add(liitosKehoVasJalka);
-        Add(liitosKehoOikJalka);
-        Add(liitosPaaKeho);
-        Add(paa);
-        Add(keho);
-        Add(jalkavasen);
-        Add(jalkaoikea);
-
-        Keyboard.Listen(Key.Right, ButtonState.Down, Liikuta, " Liikuta pelaajaa oikealle", paa, 500.0, 0.0);
-        Keyboard.Listen(Key.Left, ButtonState.Down, Liikuta, " Liikuta pelaajaa vasemmalle", paa, -500.0, 0.0);
-        Keyboard.Listen(Key.Up, ButtonState.Down, Liikuta, " Liikuta pelaajaa ylös", paa, 0.0, 2000.0);
-        Keyboard.Listen(Key.Down, ButtonState.Down, Liikuta, " Liikuta pelaajaa alas", paa, 0.0, -500.0);
-        Keyboard.Listen(Key.Right, ButtonState.Down, Liikuta, " Liikuta pelaajaa oikealle", keho, 500.0, 0.0);
-        Keyboard.Listen(Key.Left, ButtonState.Down, Liikuta, " Liikuta pelaajaa vasemmalle", keho, -500.0, 0.0);
-        Keyboard.Listen(Key.Up, ButtonState.Down, Liikuta, " Liikuta pelaajaa ylös", keho, 0.0, 2000.0);
-        Keyboard.Listen(Key.Down, ButtonState.Down, Liikuta, " Liikuta pelaajaa alas", keho, 0.0, -500.0);
-    }
 
 }
