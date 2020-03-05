@@ -17,6 +17,10 @@ public class Nallepeli : PhysicsGame
 
     public override void Begin()
     {
+        LuoKentta();
+    }
+    void LuoKentta()
+    {
         Level.Background.Color = Color.Black;
         SetWindowSize(1024, 768);
         Level.CreateBorders();
@@ -26,8 +30,10 @@ public class Nallepeli : PhysicsGame
         alaReuna.Tag = "alareuna";
         LuoPistelaskuri();
         LuoNalle();
-        Timer.CreateAndStart(0.3, LuoJaapuikkoja); ///käytetään LuoJaapuikkoja aliohjelmaa 0.3 sekunnin välein
+        Keyboard.Listen(Key.R, ButtonState.Pressed, AloitaAlusta, "Aloittaa pelin alusta");
+        Keyboard.Listen(Key.P, ButtonState.Pressed, Pause, "Pysäyttää pelin");
 
+        Timer.CreateAndStart(0.3, LuoJaapuikkoja); ///käytetään LuoJaapuikkoja aliohjelmaa 0.3 sekunnin välein
         void LuoJaapuikkoja()
         {
             for (int i = 0; i < 1; i++)   ///luo yhden jääpuikon
@@ -182,7 +188,6 @@ public class Nallepeli : PhysicsGame
                 {
                     LuoVerta(new Vector(keho.X, keho.Y - keho.Height/2));
                     LuoVerta(new Vector(paa.X, paa.Y  - paa.Height/2));
-
                 }
                 MessageDisplay.Add("Hävisit pelin");
             }
@@ -252,5 +257,9 @@ public class Nallepeli : PhysicsGame
         veri.IgnoresCollisionResponse = true;
         veri.Hit(new Vector(RandomGen.NextDouble(-200, 200), RandomGen.NextDouble(-200, 200)));
     }
-
+    void AloitaAlusta()
+    {
+        ClearAll();
+        LuoKentta();
+    }
 }
