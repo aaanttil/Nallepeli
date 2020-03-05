@@ -17,7 +17,21 @@ public class Nallepeli : PhysicsGame
 
     public override void Begin()
     {
-        LuoKentta();
+    MultiSelectWindow alkuValikko = new MultiSelectWindow("Pelin alkuvalikko",
+    "Aloita peli", "Lopeta");
+    Add(alkuValikko);
+    alkuValikko.AddItemHandler(0, AloitaPeli);
+    alkuValikko.AddItemHandler(1, Exit);
+
+        void AloitaPeli()
+        {
+            LuoKentta();
+        }    
+        void Exit()
+        {
+            ConfirmExit();
+        }
+
     }
     void LuoKentta()
     {
@@ -150,7 +164,7 @@ public class Nallepeli : PhysicsGame
         liitosKehoOikJalka.Softness = 0.0;
         liitosOikKasi.Softness = 0.1;
         liitosVasKasi.Softness = 0.1;
-        paa.AngularDamping = 0.05;
+        paa.AngularDamping = 0.001;
         keho.AngularDamping = 0.5;
 
 
@@ -240,10 +254,10 @@ public class Nallepeli : PhysicsGame
         }
  
 
-            Keyboard.Listen(Key.Right, ButtonState.Down, Liikuta, " Liikuta pelaajaa oikealle", paa, 2000.0, 0.0);
-            Keyboard.Listen(Key.Left, ButtonState.Down, Liikuta, " Liikuta pelaajaa vasemmalle", paa, -2000.0, 0.0);
-            Keyboard.Listen(Key.Up, ButtonState.Down, Liikuta, " Liikuta pelaajaa ylös", paa, 0.0, 3000.0);
-            Keyboard.Listen(Key.Down, ButtonState.Down, Liikuta, " Liikuta pelaajaa alas", paa, 0.0, -500.0);
+            Keyboard.Listen(Key.Right, ButtonState.Down, Liikuta, " Liikuta pelaajaa oikealle", paa, 3000.0, 0.0);
+            Keyboard.Listen(Key.Left, ButtonState.Down, Liikuta, " Liikuta pelaajaa vasemmalle", paa, -3000.0, 0.0);
+            Keyboard.Listen(Key.Up, ButtonState.Down, Liikuta, " Liikuta pelaajaa ylös", paa, 0.0, 4000.0);
+            Keyboard.Listen(Key.Down, ButtonState.Down, Liikuta, " Liikuta pelaajaa alas", paa, 0.0, -1000.0);
         }
     
 
