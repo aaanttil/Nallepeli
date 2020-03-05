@@ -21,6 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Content\hunaja.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Content\jaapuikko.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
