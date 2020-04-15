@@ -8,272 +8,332 @@ using Jypeli.Widgets;
 public class Nallepeli : PhysicsGame
 {
     ///kuvia
-    
+
     Image jaapuikko = LoadImage("jaapuikko2");
     Shape jaapuikonMuoto;
     Image nallepaa = LoadImage("nallepaa");
+    Image nallekuollutpaa = LoadImage("nallekuollutpaa");
+
     IntMeter pisteLaskuri;
-
-
+    ScoreList topLista = new ScoreList(10, false, 0);
+    double vaikeus = 0.3;
+   
     public override void Begin()
     {
-    MultiSelectWindow alkuValikko = new MultiSelectWindow("Pelin alkuvalikko",
-    "Aloita peli", "Lopeta");
-    Add(alkuValikko);
-    alkuValikko.AddItemHandler(0, AloitaPeli);
-    alkuValikko.AddItemHandler(1, Exit);
+        MultiSelectWindow alkuValikko = new MultiSelectWindow("Pelin alkuvalikko",
+        "Pelaa", "Vaikeustaso", "Lopeta");
+        Add(alkuValikko);
+        alkuValikko.AddItemHandler(0, AloitaPeli);
+        alkuValikko.AddItemHandler(1, Vaikeus);
+        alkuValikko.AddItemHandler(2, Exit);
 
         void AloitaPeli()
         {
-            LuoKentta();
-        }    
-        void Exit()
-        {
-            ConfirmExit();
+            LuoKentta(vaikeus);
         }
 
-    }
-    void LuoKentta()
-    {
-        Level.Background.Color = Color.Black;
-        SetWindowSize(1024, 768);
-        Level.CreateBorders();
-        Gravity = new Vector(0.0, -300.0);
-        Surface alaReuna = Surface.CreateBottom(Level);
-        Add(alaReuna);
-        alaReuna.Tag = "alareuna";
-        LuoPistelaskuri();
-        LuoNalle();
-        Keyboard.Listen(Key.R, ButtonState.Pressed, AloitaAlusta, "Aloittaa pelin alusta");
-        Keyboard.Listen(Key.P, ButtonState.Pressed, Pause, "Pysäyttää pelin");
-
-        Timer.CreateAndStart(0.3, LuoJaapuikkoja); ///käytetään LuoJaapuikkoja aliohjelmaa 0.3 sekunnin välein
-        void LuoJaapuikkoja()
+        void Vaikeus()
         {
-            for (int i = 0; i < 1; i++)   ///luo yhden jääpuikon
+            MultiSelectWindow valikko = new MultiSelectWindow("Tervetuloa peliin",
+            "Helppo", "Normaali", "Vaikea");
+            valikko.ItemSelected += PainettiinValikonNappia;
+            Add(valikko);
+            void PainettiinValikonNappia(int valinta)
             {
-                LuoJaapuikko(Level.Top, 100, 150);
+                switch (valinta)
+                {
+                    case 0:
+                        vaikeus = 0.5;
+                        Begin();
+                        break;
+                    case 1:
+                        vaikeus = 0.3;
+                        Begin();
+                        break;
+                    case 2:
+                        vaikeus = 0.1;
+                        Begin();
+                        break;
+                }
+            }
+            void Exit()
+            {
+                ConfirmExit();
+            }
+
+        }
+        void LuoKentta(double vaikeustaso)
+        {
+            Level.Background.Color = Color.Black;
+            SetWindowSize(1024, 768);
+            Level.CreateBorders();
+            Gravity = new Vector(0.0, -300.0);
+            Surface alaReuna = Surface.CreateBottom(Level);
+            Add(alaReuna);
+            alaReuna.Tag = "alareuna";
+            LuoPistelaskuri();
+            LuoNalle();
+            Keyboard.Listen(Key.R, ButtonState.Pressed, AloitaAlusta, "Aloittaa pelin alusta");
+            Keyboard.Listen(Key.F2, ButtonState.Pressed, AlkuValikko, "Avaa alkuvalikon");
+            Keyboard.Listen(Key.P, ButtonState.Pressed, Pause, "Pysäyttää pelin");
+
+            topLista = DataStorage.TryLoad<ScoreList>(topLista, "pisteet.xml");
+
+
+            Timer.CreateAndStart(vaikeustaso, LuoJaapuikkoja); ///käytetään LuoJaapuikkoja aliohjelmaa 0.3 sekunnin välein
+            void LuoJaapuikkoja()
+            {
+                for (int i = 0; i < 1; i++)   ///luo yhden jääpuikon
+                {
+                    LuoJaapuikko(Level.Top, 100, 150);
+
+                }
+            }
+
+            Timer.CreateAndStart(RandomGen.NextDouble(3, 10), LuoHunajaa);
+
+            void LuoHunajaa()
+            {
+                for (int i = 0; i < 1; i++)
+                {
+                    LuoHunaja(Level.Top, 50, 50);
+
+                }
+            }
+
+            Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
+        }
+
+
+        void Liikuta(PhysicsObject liikuteltavaOlio, double suunta, double suunta2)
+        {
+            ///liikeen tekevä aliohjelma
+            liikuteltavaOlio.Push(new Vector(suunta, suunta2));
+        }
+
+
+        void LuoJaapuikko(double paikka, double leveys, double korkeus)
+        {
+
+            ///luodaan jääpuikkoja
+            jaapuikonMuoto = Shape.FromImage(jaapuikko);
+            PhysicsObject jaapuikot = new PhysicsObject(leveys, korkeus, jaapuikonMuoto);
+            jaapuikot.Image = jaapuikko;
+            jaapuikot.Y = paikka;
+            jaapuikot.X = RandomGen.NextDouble(Level.Left, Level.Right);
+            jaapuikot.Tag = "jaapuikko";
+            Add(jaapuikot);
+            AddCollisionHandler(jaapuikot, "alareuna", JaapuikkoOsuuMaahan);
+            void JaapuikkoOsuuMaahan(PhysicsObject jaapuikot, PhysicsObject kohde)
+            {
+                ///kun jääpuikko osuu kentän alarajaan jääpuikko tuhoutuu
+                pisteLaskuri.Value += 1;
+                jaapuikot.Destroy();
+            }
+
+        }
+
+
+        void LuoHunaja(double paikka, double leveys, double korkeus)
+        {
+            ///luodaan hunajaa
+            PhysicsObject hunaja = new PhysicsObject(leveys, korkeus, Shape.Rectangle);
+            hunaja.Image = LoadImage("hunaja");
+            hunaja.Y = paikka;
+            hunaja.X = RandomGen.NextDouble(Level.Left + 10, Level.Right - 10);
+            hunaja.Tag = "hunaja";
+            Add(hunaja);
+            AddCollisionHandler(hunaja, "alareuna", CollisionHandler.DestroyObject); ///hunaja tuhoutuu osuessaan kentän alarajaan
+        }
+
+
+        void LuoPistelaskuri()
+        {
+            ///tässä luodaan pistelaskuri
+            pisteLaskuri = new IntMeter(0);
+
+            Label pisteNaytto = new Label();
+            pisteNaytto.X = Screen.Left + 100;
+            pisteNaytto.Y = Screen.Top - 100;
+            pisteNaytto.TextColor = Color.Black;
+            pisteNaytto.Color = Color.White;
+
+            pisteNaytto.BindTo(pisteLaskuri);
+            Add(pisteNaytto);
+        }
+
+
+        void LuoNalle()
+        {
+            ///tässä luodaan nalle, joka koostuu päästä, kehosta ja raajoista
+
+            PhysicsObject paa = new PhysicsObject(100, 72, Shape.Ellipse);
+            PhysicsObject keho = new PhysicsObject(100, 125, Shape.Ellipse);
+            PhysicsObject jalkavasen = new PhysicsObject(60, 25, Shape.Ellipse);
+            PhysicsObject jalkaoikea = new PhysicsObject(60, 25, Shape.Ellipse);
+            PhysicsObject oikKasi = new PhysicsObject(50, 25, Shape.Ellipse);
+            PhysicsObject vasKasi = new PhysicsObject(50, 25, Shape.Ellipse);
+
+            jalkaoikea.Position = new Vector(keho.X + 80, keho.Y - 30);
+            jalkavasen.Position = new Vector(keho.X - 80, keho.Y - 30);
+            vasKasi.Position = new Vector(keho.X - 70, keho.Y + 20);
+            oikKasi.Position = new Vector(keho.X + 70, keho.Y + 20);
+
+            paa.Image = nallepaa;
+            paa.Position = new Vector(0, keho.Y + 70);
+            keho.Color = new Color(127, 106, 0);
+            jalkavasen.Color = new Color(127, 106, 0);
+            jalkaoikea.Color = new Color(127, 106, 0);
+            oikKasi.Color = new Color(127, 106, 0);
+            vasKasi.Color = new Color(127, 106, 0);
+
+            AxleJoint liitosPaaKeho = new AxleJoint(paa, keho, new Vector(keho.X, keho.Y + 70));
+            AxleJoint liitosKehoVasJalka = new AxleJoint(jalkavasen, keho, new Vector(keho.X - 25, keho.Y - 25));
+            AxleJoint liitosKehoOikJalka = new AxleJoint(jalkaoikea, keho, new Vector(keho.X + 25, keho.Y - 25));
+            AxleJoint liitosOikKasi = new AxleJoint(oikKasi, keho, new Vector(keho.X + 20, keho.Y + 35));
+            AxleJoint liitosVasKasi = new AxleJoint(vasKasi, keho, new Vector(keho.X - 20, keho.Y + 35));
+            liitosPaaKeho.Softness = 0;
+            liitosKehoVasJalka.Softness = 0.0;
+            liitosKehoOikJalka.Softness = 0.0;
+            liitosOikKasi.Softness = 0.1;
+            liitosVasKasi.Softness = 0.1;
+            paa.AngularDamping = 0.001;
+            keho.AngularDamping = 0.5;
+
+
+            paa.CollisionIgnoreGroup = 1;
+            keho.CollisionIgnoreGroup = 1;
+
+            Add(liitosVasKasi);
+            Add(liitosOikKasi);
+            Add(liitosPaaKeho);
+            Add(liitosKehoVasJalka);
+            Add(liitosKehoOikJalka);
+            Add(paa);
+            Add(keho);
+            Add(jalkavasen);
+            Add(jalkaoikea);
+            Add(oikKasi);
+            Add(vasKasi);
+
+            int health = 3;
+            AddCollisionHandler(paa, "jaapuikko", Osuma);
+            AddCollisionHandler(keho, "jaapuikko", Osuma);
+            void Osuma(PhysicsObject tormaaja, PhysicsObject kohde)
+            {
+                health--;
+                kohde.Destroy();
+                if (health == 0)
+                {
+                    liitosPaaKeho.Destroy();
+                    paa.Image = nallekuollutpaa;
+                    Timer ajastin = new Timer();
+                    ajastin.Interval = 0.001;
+                    ajastin.Timeout += Verta;
+                    ajastin.Start(200);
+                    void Verta()
+                    {
+                        LuoVerta(new Vector(keho.X, keho.Y - keho.Height / 2));
+                        LuoVerta(new Vector(paa.X, paa.Y - paa.Height / 2));
+                    }
+
+                    MessageDisplay.Add("Hävisit pelin");
+
+                    HighScoreWindow topIkkuna = new HighScoreWindow(
+                    "Parhaat pisteet",
+                    "Onneksi olkoon, pääsit listalle pisteillä %p",
+                    topLista,
+                    pisteLaskuri.Value
+                    );
+                    Add(topIkkuna);
+
+                    topIkkuna.Closed += delegate (Window ikkuna)
+                    {
+                        DataStorage.Save<ScoreList>(topLista, "pisteet.xml");
+                    };
+
+                    topIkkuna.Closed += delegate (Window ikkuna)
+                    {
+                        AlkuValikko();
+                    };
+
+                }
 
             }
-        }
 
-        Timer.CreateAndStart(RandomGen.NextDouble(3, 10), LuoHunajaa);
 
-        void LuoHunajaa()
-        {
-            for (int i = 0; i < 1; i++)
+
+            AddCollisionHandler(vasKasi, "jaapuikko", KasiOsuma);
+            AddCollisionHandler(oikKasi, "jaapuikko", KasiOsuma);
+            AddCollisionHandler(jalkaoikea, "jaapuikko", KasiOsuma);
+            AddCollisionHandler(jalkavasen, "jaapuikko", KasiOsuma);
+
+            void KasiOsuma(PhysicsObject tormaaja, PhysicsObject kohde)
             {
-                LuoHunaja(Level.Top, 50, 50);
-
-            }
-        }
-
-        Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
-    }
-
-
-    public void Liikuta(PhysicsObject liikuteltavaOlio, double suunta, double suunta2)
-    {
-        ///liikeen tekevä aliohjelma
-        liikuteltavaOlio.Push(new Vector(suunta, suunta2));
-    }
+                ///kun jääpuikko osuu käteen, käsi irtoaa kehosta
+                if (tormaaja == vasKasi)
+                { liitosVasKasi.Destroy(); }
+                if (tormaaja == oikKasi)
+                { liitosOikKasi.Destroy(); }
+                if (tormaaja == jalkaoikea)
+                { liitosKehoOikJalka.Destroy(); }
+                if (tormaaja == jalkavasen)
+                { liitosKehoVasJalka.Destroy(); }
 
 
-    public void LuoJaapuikko(double paikka, double leveys, double korkeus)
-    {
-
-        ///luodaan jääpuikkoja
-        jaapuikonMuoto = Shape.FromImage(jaapuikko);
-        PhysicsObject jaapuikot = new PhysicsObject(leveys, korkeus, jaapuikonMuoto);
-        jaapuikot.Image = jaapuikko;
-        jaapuikot.Y = paikka;
-        jaapuikot.X = RandomGen.NextDouble(Level.Left, Level.Right);
-        jaapuikot.Tag = "jaapuikko";
-        Add(jaapuikot);
-        AddCollisionHandler(jaapuikot, "alareuna", JaapuikkoOsuuMaahan);
-        void JaapuikkoOsuuMaahan(PhysicsObject jaapuikot, PhysicsObject kohde)
-        {
-            ///kun jääpuikko osuu kentän alarajaan jääpuikko tuhoutuu
-            pisteLaskuri.Value += 1;
-            jaapuikot.Destroy();
-        }
-
-    }
-
-
-    public void LuoHunaja(double paikka, double leveys, double korkeus)
-    {
-        ///luodaan hunajaa
-        PhysicsObject hunaja = new PhysicsObject(leveys, korkeus, Shape.Rectangle);
-        hunaja.Image = LoadImage("hunaja");
-        hunaja.Y = paikka;
-        hunaja.X = RandomGen.NextDouble(Level.Left + 10, Level.Right - 10);
-        hunaja.Tag = "hunaja";
-        Add(hunaja);
-        AddCollisionHandler(hunaja, "alareuna", CollisionHandler.DestroyObject); ///hunaja tuhoutuu osuessaan kentän alarajaan
-    }
-
-
-    void LuoPistelaskuri()
-    {
-        ///tässä luodaan pistelaskuri
-        pisteLaskuri = new IntMeter(0);
-
-        Label pisteNaytto = new Label();
-        pisteNaytto.X = Screen.Left + 100;
-        pisteNaytto.Y = Screen.Top - 100;
-        pisteNaytto.TextColor = Color.Black;
-        pisteNaytto.Color = Color.White;
-
-        pisteNaytto.BindTo(pisteLaskuri);
-        Add(pisteNaytto);
-    }
-
-
-    public void LuoNalle()
-    {
-        ///tässä luodaan nalle, joka koostuu päästä, kehosta ja raajoista
-
-        PhysicsObject paa = new PhysicsObject(100, 72, Shape.Ellipse);
-        PhysicsObject keho = new PhysicsObject(100, 125, Shape.Ellipse);
-        PhysicsObject jalkavasen = new PhysicsObject(60, 25, Shape.Ellipse);
-        PhysicsObject jalkaoikea = new PhysicsObject(60, 25, Shape.Ellipse);
-        PhysicsObject oikKasi = new PhysicsObject(50, 25, Shape.Ellipse);
-        PhysicsObject vasKasi = new PhysicsObject(50, 25, Shape.Ellipse);
-
-        jalkaoikea.Position = new Vector(keho.X + 80, keho.Y - 30);
-        jalkavasen.Position = new Vector(keho.X - 80, keho.Y - 30);
-        vasKasi.Position = new Vector(keho.X - 70, keho.Y + 20);
-        oikKasi.Position = new Vector(keho.X + 70, keho.Y + 20);
-
-        paa.Image = nallepaa;
-        paa.Position = new Vector(0, keho.Y + 70);
-        keho.Color = new Color(127, 106, 0);
-        jalkavasen.Color = new Color(127, 106, 0);
-        jalkaoikea.Color = new Color(127, 106, 0);
-        oikKasi.Color = new Color(127, 106, 0);
-        vasKasi.Color = new Color(127, 106, 0);
-
-        AxleJoint liitosPaaKeho = new AxleJoint(paa, keho, new Vector(keho.X, keho.Y + 70));
-        AxleJoint liitosKehoVasJalka = new AxleJoint(jalkavasen, keho, new Vector(keho.X - 25, keho.Y - 25));
-        AxleJoint liitosKehoOikJalka = new AxleJoint(jalkaoikea, keho, new Vector(keho.X + 25, keho.Y - 25));
-        AxleJoint liitosOikKasi = new AxleJoint(oikKasi, keho, new Vector(keho.X + 20, keho.Y + 35));
-        AxleJoint liitosVasKasi = new AxleJoint(vasKasi, keho, new Vector(keho.X - 20, keho.Y + 35));
-        liitosPaaKeho.Softness = 0;
-        liitosKehoVasJalka.Softness = 0.0;
-        liitosKehoOikJalka.Softness = 0.0;
-        liitosOikKasi.Softness = 0.1;
-        liitosVasKasi.Softness = 0.1;
-        paa.AngularDamping = 0.001;
-        keho.AngularDamping = 0.5;
-
-
-        paa.CollisionIgnoreGroup = 1;
-        keho.CollisionIgnoreGroup = 1;
-
-        Add(liitosVasKasi);
-        Add(liitosOikKasi);
-        Add(liitosPaaKeho);
-        Add(liitosKehoVasJalka);
-        Add(liitosKehoOikJalka);
-        Add(paa);
-        Add(keho);
-        Add(jalkavasen);
-        Add(jalkaoikea);
-        Add(oikKasi);
-        Add(vasKasi);
-
-        int health = 3;
-
-        AddCollisionHandler(paa, "jaapuikko", Osuma);
-        AddCollisionHandler(keho, "jaapuikko", Osuma);
-        void Osuma(PhysicsObject tormaaja, PhysicsObject kohde)
-        {
-            health--;
-            kohde.Destroy();
-            if (health < 1)
-            {
-                liitosPaaKeho.Destroy();
+                kohde.Destroy();
+                tormaaja.IgnoresCollisionResponse = true;
                 Timer ajastin = new Timer();
                 ajastin.Interval = 0.001;
                 ajastin.Timeout += Verta;
-                ajastin.Start(200);
+                ajastin.Start(1000);
                 void Verta()
                 {
-                    LuoVerta(new Vector(keho.X, keho.Y - keho.Height/2));
-                    LuoVerta(new Vector(paa.X, paa.Y  - paa.Height/2));
+                    if (tormaaja == vasKasi) { LuoVerta(new Vector(keho.X - 25, keho.Y + 35)); }
+                    if (tormaaja == oikKasi) { LuoVerta(new Vector(keho.X + 25, keho.Y + 35)); }
+                    if (tormaaja == jalkavasen) { LuoVerta(new Vector(keho.X - 35, keho.Y - 25)); }
+                    if (tormaaja == jalkaoikea) { LuoVerta(new Vector(keho.X + 35, keho.Y - 25)); }
+
                 }
-                MessageDisplay.Add("Hävisit pelin");
             }
 
-        }
-        
 
+            AddCollisionHandler(paa, "hunaja", HunajaOsuma);
+            AddCollisionHandler(keho, "hunaja", HunajaOsuma);
 
-        AddCollisionHandler(vasKasi, "jaapuikko", KasiOsuma);
-        AddCollisionHandler(oikKasi, "jaapuikko", KasiOsuma);
-        AddCollisionHandler(jalkaoikea, "jaapuikko", KasiOsuma);
-        AddCollisionHandler(jalkavasen, "jaapuikko", KasiOsuma);
-
-        void KasiOsuma(PhysicsObject tormaaja, PhysicsObject kohde)
-        {
-            ///kun jääpuikko osuu käteen, käsi irtoaa kehosta
-            if (tormaaja == vasKasi)
-            { liitosVasKasi.Destroy(); }
-            if (tormaaja == oikKasi)
-            { liitosOikKasi.Destroy(); }
-            if (tormaaja == jalkaoikea)
-            { liitosKehoOikJalka.Destroy(); }
-            if (tormaaja == jalkavasen)
-            { liitosKehoVasJalka.Destroy(); }
-
-
-            kohde.Destroy();
-            tormaaja.IgnoresCollisionResponse = true;
-            Timer ajastin = new Timer();
-            ajastin.Interval = 0.001;
-            ajastin.Timeout += Verta;
-            ajastin.Start(1000);
-            void Verta()
-            {   if (tormaaja == vasKasi) { LuoVerta(new Vector(keho.X - 25, keho.Y + 35)); }
-                if (tormaaja == oikKasi) { LuoVerta(new Vector(keho.X + 25, keho.Y + 35)); }
-                if (tormaaja == jalkavasen) { LuoVerta(new Vector(keho.X - 35, keho.Y - 25)); }
-                if (tormaaja == jalkaoikea) { LuoVerta(new Vector(keho.X + 35, keho.Y - 25)); }  
-
-            }
-        }
-
-
-        AddCollisionHandler(paa, "hunaja", HunajaOsuma);
-        AddCollisionHandler(keho, "hunaja", HunajaOsuma);
-
-        void HunajaOsuma(PhysicsObject tormaaja, PhysicsObject kohde)
-        {
+            void HunajaOsuma(PhysicsObject tormaaja, PhysicsObject kohde)
+            {
                 health++;
                 kohde.Destroy();
-        }
- 
+            }
+
 
             Keyboard.Listen(Key.Right, ButtonState.Down, Liikuta, " Liikuta pelaajaa oikealle", paa, 3000.0, 0.0);
             Keyboard.Listen(Key.Left, ButtonState.Down, Liikuta, " Liikuta pelaajaa vasemmalle", paa, -3000.0, 0.0);
             Keyboard.Listen(Key.Up, ButtonState.Down, Liikuta, " Liikuta pelaajaa ylös", paa, 0.0, 4000.0);
             Keyboard.Listen(Key.Down, ButtonState.Down, Liikuta, " Liikuta pelaajaa alas", paa, 0.0, -1000.0);
         }
-    
 
-    public void LuoVerta(Vector paikka)
-    {
-        PhysicsObject veri = new PhysicsObject(1, 1, Shape.Circle);
-        veri.Color = Color.Red;
-        veri.Position = paikka;
-        Add(veri);
-        AddCollisionHandler(veri, "alareuna", CollisionHandler.DestroyObject);
-        veri.IgnoresCollisionResponse = true;
-        veri.Hit(new Vector(RandomGen.NextDouble(-200, 200), RandomGen.NextDouble(-200, 200)));
-    }
-    void AloitaAlusta()
-    {
-        ClearAll();
-        LuoKentta();
+
+        void LuoVerta(Vector paikka)
+        {
+            PhysicsObject veri = new PhysicsObject(1, 1, Shape.Circle);
+            veri.Color = Color.Red;
+            veri.Position = paikka;
+            Add(veri);
+            AddCollisionHandler(veri, "alareuna", CollisionHandler.DestroyObject);
+            veri.IgnoresCollisionResponse = true;
+            veri.Hit(new Vector(RandomGen.NextDouble(-200, 200), RandomGen.NextDouble(-200, 200)));
+        }
+        void AloitaAlusta()
+        {
+            ClearAll();
+            LuoKentta(vaikeus);
+        }
+        void AlkuValikko()
+        {
+            ClearAll();
+            Begin();
+        }
     }
 }

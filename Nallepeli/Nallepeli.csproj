@@ -42,6 +42,9 @@
     <None Update="Content\nallekeho.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Content\nallekuollutpaa.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Content\nallenkuva.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
