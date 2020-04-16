@@ -227,15 +227,14 @@ public class Nallepeli : PhysicsGame
                 ajastin.Start(200);
 
 
-
                 void Verta()
                 {
                     LuoVerta(new Vector(keho.X, keho.Y - keho.Height / 2));
                     LuoVerta(new Vector(paa.X, paa.Y - paa.Height / 2));
                 }
                 
-                int pisteet = Pisteet(tilastot);
 
+                int pisteet = Pisteet(tilastot);
                 pisteLista.Add(pisteet);
                 int keskiarvo = PisteidenKeskiArvo(pisteLista);
 
@@ -385,17 +384,20 @@ public class Nallepeli : PhysicsGame
         Begin();
     }
 
+
+    /// <summary>
+    /// laskee yhden session pisteiden keskiarvon
+    /// </summary>
+    /// <param name="pisteLista">lista pisteistä</param>
+    /// <returns></returns>
     public int PisteidenKeskiArvo(List<int> pisteLista)
     {
         int summa = 0;
-        int määrä = 0;
         for (int i = 0; i < pisteLista.Count; i++)
         {
             summa = summa + pisteLista[i];
-            määrä = määrä + 1;
         }
-        if (määrä == 0) return 0;
-        return summa / määrä;
+        return summa / pisteLista.Count;
     }
 
 }
