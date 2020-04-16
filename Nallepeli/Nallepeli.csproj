@@ -24,6 +24,15 @@
     <None Update="Content\hunaja.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Content\hunaja2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\hunaja3.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\hunaja4.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Content\jaapuikko.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
