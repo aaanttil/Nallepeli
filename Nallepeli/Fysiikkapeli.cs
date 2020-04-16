@@ -22,6 +22,8 @@ public class Nallepeli : PhysicsGame
 
     IntMeter pisteLaskuri;
     ScoreList topLista = new ScoreList(10, false, 0);
+    List<int> pisteLista = new List<int>();
+
 
     /// <summary>
     /// Pääohjelma
@@ -90,7 +92,7 @@ public class Nallepeli : PhysicsGame
 
         void LuoJaapuikkoja()
         {
-                LuoJaapuikko(Level.Top, 100, 150); 
+            LuoJaapuikko(Level.Top, 100, 150);
         }
 
 
@@ -98,7 +100,7 @@ public class Nallepeli : PhysicsGame
 
         void LuoHunajaa()
         {
-            LuoHunaja(Level.Top, 50, 50, RandomGen.NextInt(1,4)) ;
+            LuoHunaja(Level.Top, 50, 50, RandomGen.NextInt(1, 4));
         }
 
         Keyboard.Listen(Key.R, ButtonState.Pressed, AloitaAlusta, "Aloittaa pelin alusta");
@@ -224,16 +226,22 @@ public class Nallepeli : PhysicsGame
                 ajastin.Timeout += Verta;
                 ajastin.Start(200);
 
+
+
                 void Verta()
                 {
                     LuoVerta(new Vector(keho.X, keho.Y - keho.Height / 2));
                     LuoVerta(new Vector(paa.X, paa.Y - paa.Height / 2));
                 }
-
+                
                 int pisteet = Pisteet(tilastot);
+
+                pisteLista.Add(pisteet);
+                int keskiarvo = PisteidenKeskiArvo(pisteLista);
+
                 HighScoreWindow topIkkuna = new HighScoreWindow(
                 "Parhaat pisteet",
-                "Väistit jääpuikkoa " +pisteLaskuri.Value + ", sinuun osui " + tilastot[1] + " jääpuikkoa ja keräsit " + tilastot[2] + " purkkia hunajaa. Piisteesi on %p" ,
+                "Väistit jääpuikkoa " + pisteLaskuri.Value + ", sinuun osui " + tilastot[1] + " jääpuikkoa ja keräsit " + tilastot[2] + " purkkia hunajaa. Piisteesi on %p ja pisteiden keskiarvo on " + keskiarvo,
                 topLista,
                 pisteet
                 );
@@ -248,12 +256,12 @@ public class Nallepeli : PhysicsGame
                 {
                     AlkuValikko();
                 };
-                
-                
+
+
                 int Pisteet(int[] tilastot)
                 {
                     int pisteet = pisteLaskuri.Value + 20 * tilastot[2];
-                    return pisteet; 
+                    return pisteet;
                 }
 
             }
@@ -377,5 +385,17 @@ public class Nallepeli : PhysicsGame
         Begin();
     }
 
+    public int PisteidenKeskiArvo(List<int> pisteLista)
+    {
+        int summa = 0;
+        int määrä = 0;
+        for (int i = 0; i < pisteLista.Count; i++)
+        {
+            summa = summa + pisteLista[i];
+            määrä = määrä + 1;
+        }
+        if (määrä == 0) return 0;
+        return summa / määrä;
+    }
 
 }
