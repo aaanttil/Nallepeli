@@ -19,7 +19,7 @@ public class Nallepeli : PhysicsGame
 
     public const double liike = 3000.0;
     public double vaikeus = 0.3;
-    public const int verenMäärä = 200;
+    public const int verenMaara = 200;
 
     IntMeter pisteLaskuri;
     ScoreList topLista = new ScoreList(10, false, 0);
@@ -225,7 +225,7 @@ public class Nallepeli : PhysicsGame
                 Timer ajastin = new Timer();
                 ajastin.Interval = 0.001;
                 ajastin.Timeout += Verta;
-                ajastin.Start(verenMäärä);
+                ajastin.Start(verenMaara);
 
 
                 void Verta()
@@ -285,7 +285,7 @@ public class Nallepeli : PhysicsGame
             Timer ajastin = new Timer();
             ajastin.Interval = 0.001;
             ajastin.Timeout += Verta;
-            ajastin.Start(verenMäärä*5);
+            ajastin.Start(verenMaara*5);
             
             void Verta()
             {
