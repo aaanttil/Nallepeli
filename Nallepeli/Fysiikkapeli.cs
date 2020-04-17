@@ -19,6 +19,7 @@ public class Nallepeli : PhysicsGame
 
     public const double liike = 3000.0;
     public double vaikeus = 0.3;
+    public const int verenMäärä = 200;
 
     IntMeter pisteLaskuri;
     ScoreList topLista = new ScoreList(10, false, 0);
@@ -224,7 +225,7 @@ public class Nallepeli : PhysicsGame
                 Timer ajastin = new Timer();
                 ajastin.Interval = 0.001;
                 ajastin.Timeout += Verta;
-                ajastin.Start(200);
+                ajastin.Start(verenMäärä);
 
 
                 void Verta()
@@ -284,14 +285,14 @@ public class Nallepeli : PhysicsGame
             Timer ajastin = new Timer();
             ajastin.Interval = 0.001;
             ajastin.Timeout += Verta;
-            ajastin.Start(1000);
+            ajastin.Start(verenMäärä*5);
+            
             void Verta()
             {
                 if (tormaaja == vasKasi) { LuoVerta(new Vector(keho.X - 25, keho.Y + 35)); }
                 if (tormaaja == oikKasi) { LuoVerta(new Vector(keho.X + 25, keho.Y + 35)); }
                 if (tormaaja == jalkavasen) { LuoVerta(new Vector(keho.X - 35, keho.Y - 25)); }
                 if (tormaaja == jalkaoikea) { LuoVerta(new Vector(keho.X + 35, keho.Y - 25)); }
-
             }
         }
 
