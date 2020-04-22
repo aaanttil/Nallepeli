@@ -6,7 +6,7 @@ using Jypeli.Controls;
 using Jypeli.Widgets;
 
 /// @author Aapo Anttila
-/// @version 15.4.2020
+/// @version 22.4.2020
 
 public class Nallepeli : PhysicsGame
 {
@@ -17,7 +17,7 @@ public class Nallepeli : PhysicsGame
     Image nallekuollutpaa = LoadImage("nallekuollutpaa");
     Shape jaapuikonMuoto;
 
-    public const double liike = 3000.0;
+    public const double liike = 4000.0;
     public double vaikeus = 0.3;
     public const int verenMaara = 200;
 
@@ -64,6 +64,7 @@ public class Nallepeli : PhysicsGame
             }
         }
 
+
         void AloitaPeli()
         {
             LuoKentta(vaikeus);
@@ -90,24 +91,29 @@ public class Nallepeli : PhysicsGame
         LuoNalle();
         topLista = DataStorage.TryLoad<ScoreList>(topLista, "pisteet.xml");
         Timer.CreateAndStart(vaikeustaso, LuoJaapuikkoja);         ///käytetään LuoJaapuikkoja vaikeustason mukaisen ajan välein
-
-        void LuoJaapuikkoja()
-        {
-            LuoJaapuikko(Level.Top, 100, 150);
-        }
-
-
         Timer.CreateAndStart(RandomGen.NextDouble(3, 10), LuoHunajaa);
-
-        void LuoHunajaa()
-        {
-            LuoHunaja(Level.Top, 50, 50, RandomGen.NextInt(1, 4));
-        }
-
         Keyboard.Listen(Key.R, ButtonState.Pressed, AloitaAlusta, "Aloittaa pelin alusta");
         Keyboard.Listen(Key.F2, ButtonState.Pressed, AlkuValikko, "Avaa alkuvalikon");
         Keyboard.Listen(Key.P, ButtonState.Pressed, Pause, "Pysäyttää pelin");
         Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
+    }
+
+
+    /// <summary>
+    /// Kutsuu LuoJaapuikko aliohjelmaa
+    /// </summary>
+    public void LuoJaapuikkoja()
+    {
+        LuoJaapuikko(Level.Top, 100, 150);
+    }
+
+
+    /// <summary>
+    /// Kutsuu LuoHunaja aliohjelmaa
+    /// </summary>
+    public void LuoHunajaa()
+    {
+        LuoHunaja(Level.Top, 50, 50, RandomGen.NextInt(1, 4));
     }
 
 
@@ -127,14 +133,19 @@ public class Nallepeli : PhysicsGame
         jaapuikot.Tag = "jaapuikko";
         Add(jaapuikot);
         AddCollisionHandler(jaapuikot, "alareuna", JaapuikkoOsuuMaahan);
+    }
 
-        void JaapuikkoOsuuMaahan(PhysicsObject jaapuikot, PhysicsObject kohde)
-        {
-            ///jääpuikko tuhoutuu osuessaan kentän alarajaan
-            pisteLaskuri.Value += 1;
-            jaapuikot.Destroy();
-        }
 
+    /// <summary>
+    /// alihojelma määrää mitä tapahtuu kun jääpuikko osuu kentän alarajaan
+    /// </summary>
+    /// <param name="jaapuikot">törmääjä</param>
+    /// <param name="kohde">törmäyksen kohde</param>
+    public void JaapuikkoOsuuMaahan(PhysicsObject jaapuikot, PhysicsObject kohde)
+    {
+        ///jääpuikko tuhoutuu osuessaan kentän alarajaan
+        pisteLaskuri.Value += 1;
+        jaapuikot.Destroy();
     }
 
 
@@ -400,5 +411,6 @@ public class Nallepeli : PhysicsGame
         }
         return summa / pisteLista.Count;
     }
+
 
 }
