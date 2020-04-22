@@ -7,19 +7,25 @@ using Jypeli.Widgets;
 
 /// @author Aapo Anttila
 /// @version 22.4.2020
-
+/// <summary>
+/// Peli, jossa liikutellaan nallea ja pyritään väistelemään ylhäältä tippuvia jääpuikkoja. 
+/// Pisteitä pelissä saa sen mukaan kuinka monta jääpuikkoa on väistänyt. Hunajapurkkien keräämisestä saa myös lisäpisteitä.
+/// Pelissä on valittavana kolme vaikeusastetta, jotka vaikuttavat siihen, kuinka tiheään jääpuikkoja putoaa.
+/// </summary>
 public class Nallepeli : PhysicsGame
 {
-    ///kuvia
+    //kuvia
     Image jaapuikko = LoadImage("jaapuikko2");
     Image nallepaa = LoadImage("nallepaa");
     Image[] hunajaKuva = LoadImages("hunaja", "hunaja2", "hunaja3", "hunaja4");
     Image nallekuollutpaa = LoadImage("nallekuollutpaa");
     Shape jaapuikonMuoto;
-
-    public const double liike = 4000.0;
+    
     public double vaikeus = 0.3;
-    public const int verenMaara = 200;
+    public const double LIIKE = 4000.0;
+    public const int VEREN_MAARA = 200;
+    public const double HUNAJAN_KOKO = 50;
+    public const double JAAPUIKON_KOKO = 100;
 
     IntMeter pisteLaskuri;
     ScoreList topLista = new ScoreList(10, false, 0);
@@ -90,7 +96,7 @@ public class Nallepeli : PhysicsGame
         LuoPistelaskuri();
         LuoNalle();
         topLista = DataStorage.TryLoad<ScoreList>(topLista, "pisteet.xml");
-        Timer.CreateAndStart(vaikeustaso, LuoJaapuikkoja);         ///käytetään LuoJaapuikkoja vaikeustason mukaisen ajan välein
+        Timer.CreateAndStart(vaikeustaso, LuoJaapuikkoja);         //käytetään LuoJaapuikkoja vaikeustason mukaisen ajan välein
         Timer.CreateAndStart(RandomGen.NextDouble(3, 10), LuoHunajaa);
         Keyboard.Listen(Key.R, ButtonState.Pressed, AloitaAlusta, "Aloittaa pelin alusta");
         Keyboard.Listen(Key.F2, ButtonState.Pressed, AlkuValikko, "Avaa alkuvalikon");
@@ -104,7 +110,7 @@ public class Nallepeli : PhysicsGame
     /// </summary>
     public void LuoJaapuikkoja()
     {
-        LuoJaapuikko(Level.Top, 100, 150);
+        LuoJaapuikko(Level.Top, JAAPUIKON_KOKO, JAAPUIKON_KOKO*1.5);
     }
 
 
@@ -113,7 +119,7 @@ public class Nallepeli : PhysicsGame
     /// </summary>
     public void LuoHunajaa()
     {
-        LuoHunaja(Level.Top, 50, 50, RandomGen.NextInt(1, 4));
+        LuoHunaja(Level.Top, HUNAJAN_KOKO, HUNAJAN_KOKO, RandomGen.NextInt(1, 4));
     }
 
 
@@ -163,12 +169,12 @@ public class Nallepeli : PhysicsGame
         hunaja.X = RandomGen.NextDouble(Level.Left + 10, Level.Right - 10);
         hunaja.Tag = "hunaja";
         Add(hunaja);
-        AddCollisionHandler(hunaja, "alareuna", CollisionHandler.DestroyObject); ///hunaja tuhoutuu osuessaan kentän alarajaan
+        AddCollisionHandler(hunaja, "alareuna", CollisionHandler.DestroyObject); //hunaja tuhoutuu osuessaan kentän alarajaan
     }
 
 
     /// <summary>
-    ///tässä luodaan nalle, joka koostuu päästä, kehosta ja raajoista
+    /// tässä luodaan nalle, joka koostuu päästä, kehosta ja raajoista
     /// </summary>
     public void LuoNalle()
     {
@@ -220,10 +226,10 @@ public class Nallepeli : PhysicsGame
         Add(oikKasi);
         Add(vasKasi);
 
-        int[] tilastot = { 3, 0, 0 };
+        int[] tilastot = { 3, 0, 0 };  //tilastot[0] elämät, tilastot[1] montako jääpuikkoa nalleen on osunut, tilastot[2] montako hunajapurkkia on kerännyt
 
 
-        ///aliohjelma määrää mitä tapahtuu kun jääpuikko osuu kehoon tai päähän 
+        //aliohjelma määrää mitä tapahtuu kun jääpuikko osuu kehoon tai päähän 
         void Osuma(PhysicsObject tormaaja, PhysicsObject kohde)
         {
             tilastot[0] -= 1;
@@ -236,7 +242,7 @@ public class Nallepeli : PhysicsGame
                 Timer ajastin = new Timer();
                 ajastin.Interval = 0.001;
                 ajastin.Timeout += Verta;
-                ajastin.Start(verenMaara);
+                ajastin.Start(VEREN_MAARA);
 
 
                 void Verta()
@@ -279,7 +285,7 @@ public class Nallepeli : PhysicsGame
         }
 
 
-        ///kun jääpuikko osuu raajaan, raaja irtoaa kehosta
+        //kun jääpuikko osuu raajaan, raaja irtoaa kehosta
         void RaajaOsuma(PhysicsObject tormaaja, PhysicsObject kohde)
         {
             if (tormaaja == vasKasi)
@@ -296,7 +302,7 @@ public class Nallepeli : PhysicsGame
             Timer ajastin = new Timer();
             ajastin.Interval = 0.001;
             ajastin.Timeout += Verta;
-            ajastin.Start(verenMaara*5);
+            ajastin.Start(VEREN_MAARA*5);
             
             void Verta()
             {
@@ -310,7 +316,7 @@ public class Nallepeli : PhysicsGame
 
         void HunajaOsuma(PhysicsObject tormaaja, PhysicsObject kohde)
         {
-            ///hunaja kasvattaa healthia osuessaan päähän tai kehoon
+            //hunaja kasvattaa healthia osuessaan päähän tai kehoon
             tilastot[0] += 1;
             tilastot[2] += 1;
             kohde.Destroy();
@@ -326,10 +332,10 @@ public class Nallepeli : PhysicsGame
         AddCollisionHandler(paa, "jaapuikko", Osuma);
         AddCollisionHandler(keho, "jaapuikko", Osuma);
 
-        Keyboard.Listen(Key.Right, ButtonState.Down, Liikuta, " Liikuta pelaajaa oikealle", paa, liike, 0.0);
-        Keyboard.Listen(Key.Left, ButtonState.Down, Liikuta, " Liikuta pelaajaa vasemmalle", paa, -liike, 0.0);
-        Keyboard.Listen(Key.Up, ButtonState.Down, Liikuta, " Liikuta pelaajaa ylös", paa, 0.0, liike * 4 / 3);
-        Keyboard.Listen(Key.Down, ButtonState.Down, Liikuta, " Liikuta pelaajaa alas", paa, 0.0, -liike / 3);
+        Keyboard.Listen(Key.Right, ButtonState.Down, Liikuta, " Liikuta pelaajaa oikealle", paa, LIIKE, 0.0);
+        Keyboard.Listen(Key.Left, ButtonState.Down, Liikuta, " Liikuta pelaajaa vasemmalle", paa, -LIIKE, 0.0);
+        Keyboard.Listen(Key.Up, ButtonState.Down, Liikuta, " Liikuta pelaajaa ylös", paa, 0.0, LIIKE * 4 / 3);
+        Keyboard.Listen(Key.Down, ButtonState.Down, Liikuta, " Liikuta pelaajaa alas", paa, 0.0, -LIIKE / 3);
     }
 
 
@@ -401,7 +407,7 @@ public class Nallepeli : PhysicsGame
     /// laskee yhden session pisteiden keskiarvon
     /// </summary>
     /// <param name="pisteLista">lista pisteistä</param>
-    /// <returns></returns>
+    /// <returns>yhden pelisession pistemäärien keskiarvo</returns>
     public int PisteidenKeskiArvo(List<int> pisteLista)
     {
         int summa = 0;
